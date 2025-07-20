@@ -1,0 +1,40 @@
+#include <stdio.h>
+
+#define DEGREE 6  // maximum degree is 6, so 7 coefficients
+
+void readPolynomial(int poly[], const char *name) {
+    printf("Enter %s polynomial coefficients (7 values in Z3): ", name);
+    for (int i = 0; i <= DEGREE; i++) {
+        scanf("%d", &poly[i]);
+        poly[i] %= 3;  // ensure value is in Z3
+        if (poly[i] < 0) poly[i] += 3;  // handle negative input if any
+    }
+}
+
+void addMod3(int c[], int m[], int k[]) {
+    for (int i = 0; i <= DEGREE; i++) {
+        c[i] = (m[i] + k[i]) % 3;
+    }
+}
+
+void printPolynomial(int poly[]) {
+    printf("Cipher polynomial c(x): ");
+    for (int i = 0; i <= DEGREE; i++) {
+        printf("%d", poly[i]);
+        if (i != DEGREE) printf(" ");
+    }
+    printf("\n");
+}
+
+int main() {
+    int m[DEGREE + 1], k[DEGREE + 1], c[DEGREE + 1];
+
+    readPolynomial(m, "message (m)");
+    readPolynomial(k, "key (k)");
+
+    addMod3(c, m, k);
+
+    printPolynomial(c);
+
+    return 0;
+}
