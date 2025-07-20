@@ -1,0 +1,105 @@
+#include <stdio.h>
+
+#define MAX_BOOKS 100
+
+int isPossible(int pages[], int n, int students, int maxPages) {
+    int count = 1;
+    int total = 0;
+
+    for (int i = 0; i < n; i++) {
+        if (pages[i] > maxPages)
+            return 0;
+
+        if (total + pages[i] > maxPages) {
+            count++;
+            total = pages[i];
+
+            if (count > students)
+                return 0;
+        } else {
+            total += pages[i];
+        }
+    }
+
+    return 1;
+}
+
+int allocateBooks(int pages[], int n, int students, int allocation[MAX_BOOKS]) {
+    if (students > n)
+        return -1;
+
+    int low = pages[0], high = 0;
+    for (int i = 0; i < n; i++) {
+        if (pages[i] > low)
+            low = pages[i];
+        high += pages[i];
+    }
+
+    int result = high;
+    while (low <= high) {
+        int mid = (low + high) / 2;
+
+        if (isPossible(pages, n, students, mid)) {
+            result = mid;
+            high = mid - 1;
+        } else {
+            low = mid + 1;
+        }
+    }
+
+    // Now build the allocation with the found result
+    int idx = n - 1;
+    int currSum = 0;
+    int student = students - 1;
+
+    for (int i = n - 1; i >= 0; i--) {
+        if (currSum + pages[i] > result || i + 1 < student + 1) {
+            allocation[i + 1] = -1;  // -1 marks new student
+            student--;
+            currSum = pages[i];
+        } else {
+            currSum += pages[i];
+        }
+    }
+
+    allocation[0] = -2;  // marker to start allocation
+    return result;
+}
+
+void printAllocation(int pages[], int n, int allocation[MAX_BOOKS]) {
+    int student = 1, total = 0;
+    printf("Student %d: [", student);
+    for (int i = 0; i < n; i++) {
+        if (allocation[i] == -1) {
+            printf("] → %d pages\n", total);
+            total = 0;
+            student++;
+            printf("Student %d: [", student);
+        }
+        if (allocation[i] != -2) {
+            printf("%d", pages[i]);
+            total += pages[i];
+            if (i < n - 1 && allocation[i + 1] != -1)
+                printf(", ");
+        }
+    }
+    printf("] → %d pages\n", total);
+}
+
+int main() {
+    int pages[] = {10, 20, 30, 40, 50, 60};
+    int n = sizeof(pages) / sizeof(pages[0]);
+    int students = 4;
+    int allocation[MAX_BOOKS] = {0};
+
+    int result = allocateBooks(pages, n, students, allocation);
+
+    if (result != -1) {
+        printf("Minimum of the maximum pages assigned: %d\n\n", result);
+        printAllocation(pages, n, allocation);
+    } else {
+        printf("Allocation not possible.\n");
+    }
+
+    return 0;
+}
